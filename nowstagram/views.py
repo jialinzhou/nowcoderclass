@@ -9,7 +9,7 @@ def index():
     images = Images.query.order_by(db.desc('id')).limit(10).all()
     # comments = Comment.query.filter_by('image_id=i')
     for image in images:
-        print image.comment
+        print image.comments
     return  render_template('index.html', images=images)
 
 @app.route('/profile/<int:user_id>/')

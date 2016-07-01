@@ -30,10 +30,10 @@
             <ul class="discuss-list">
                 <li class="more-discuss">
                     <a>
-                        <span>全部 </span><span class="">{{image.comment|length}}</span>
+                        <span>全部 </span><span class="">{{image.comments|length}}</span>
                         <span> 条评论</span></a>
                 </li>
-                {% for comment in image.comment: %}
+                {% for comment in image.comments: %}
                 {% if loop.index > 3 %}{% break %}{% endif %}
                 <li>
                     <!-- <a class=" icon-remove" title="删除评论"></a> -->

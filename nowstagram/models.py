@@ -40,7 +40,7 @@ class Images(db.Model):
     url = db.Column(db.String(512))
     # comment = db.Column(db.String(1024))
     created_date = db.Column(db.DateTime)
-    comment = db.relationship('Comment')
+    comments = db.relationship('Comment')
 
     def __init__(self, url, user_id):
         self.url = url
