@@ -29,7 +29,7 @@ class User(db.Model):
         self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
 
     def __repr__(self):
-        return '<User %d %s>' % (self.id, self.username)
+        return ('<User %d %s>' % (self.id, self.username)).encode('gbk')
 
 
 class Images(db.Model):
@@ -65,7 +65,6 @@ class Comment(db.Model):
         self.content = content
         self.user_id = user_id
         self.image_id = image_id
-        # self.status = status
 
     def __repr__(self):
-        return  '<Comment %s %d>' % (self.content, self.user_id)
+        return  ('<Comment %s %d>' % (self.content, self.user_id)).encode('gbk')
