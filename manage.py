@@ -79,7 +79,7 @@ def init_database():
     images = Images.query.order_by(db.desc('images.id')).limit(10).all()
     for image in images:
         # print 8, image.user.id, image.user.head_url, image.user.username
-        print  8,image.id,image.comment
+        print  8,image.id,image.comments
 #     为什么可以进行反向查询但是，在Html里面就是不行呢？
 #     为什么结果显示仍然为空？因为查询的哪一项不存在，被前面删除了
 #     c = Comment.query.get(7)

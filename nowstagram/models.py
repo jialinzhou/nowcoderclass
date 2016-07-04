@@ -18,14 +18,16 @@ class User(db.Model):
     # 可以由多个主键
     username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(32))
+    salt = db.Column(db.String(32))
     head_url = db.Column(db.String(256))
     comment = db.relationship('Comment',backref='user',lazy='dynamic')
     # images = db.relationship('Images')
     images =  db.relationship('Images', backref='user', lazy='dynamic')
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, salt=''):
         self.username = username
         self.password = password
+        self.salt = salt
         self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
 
     def __repr__(self):
