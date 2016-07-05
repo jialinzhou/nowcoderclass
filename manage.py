@@ -18,11 +18,11 @@ def init_database():
     for i in range(0, 100):
         db.session.add(User('practice'+str(i+1), 'pass'+str(i+1)))
     #   密码是需要加密的
-        for j in range(0, 3):
-            db.session.add(Images(get_url(), i))
+        for j in range(0, 10):
+            db.session.add(Images(get_url(), i+1))
             for k in range(0, 3):
                 # db.session.add(Comment('这是一条评论'+str(k), random.randint(0,100),random.randint(0,100)))
-                db.session.add(Comment('this is a comment'+str(k+1), i,  1 + 3 * i + j,))
+                db.session.add(Comment('this is a comment'+str(k+1), i,  1 + 10 * i + j))
 #                 需要将中文字符串转换成 buffer() 类型才不会有问题
 #                 sqlite3针对BLOB（二进制大对象）的存储时默认为buffer类型的，所以需要进行转换
 #                 可是这样数据库里面显示的就不是中文了啊
@@ -75,11 +75,18 @@ def init_database():
     # 在没有设置backref的情况下，可以正确的得到关联的images结果，但backref后就没有了
     # 有结果，但是直接打印出出来格式不对，用.all()就可以全部打印出来
     print 88,Images.query.get(8).user.id
-    print 89,Images.query.order_by(db.desc('images.id')).limit(10).first()
-    images = Images.query.order_by(db.desc('images.id')).limit(10).all()
+    print 888,Images.query.get(10),'comment',Images.query.get(10).comments
+    print 89, Images.query.order_by(db.desc('id')).limit(10).first()
+    images = Images.query.order_by(db.desc('id')).limit(10)
     for image in images:
-        # print 8, image.user.id, image.user.head_url, image.user.username
-        print  8,image.id,image.comments
+        print 999,image,image.comments
+        for comment in image.comments:
+            print 'comment',comment
+    # for image in images:
+    #     # print 8, image.user.id, image.user.head_url, image.user.username
+    #     print  8,image.id,image.comments.all()
+        # for comment in  image.comments:
+        #     print  88,comment
 #     为什么可以进行反向查询但是，在Html里面就是不行呢？
 #     为什么结果显示仍然为空？因为查询的哪一项不存在，被前面删除了
 #     c = Comment.query.get(7)

@@ -1,7 +1,7 @@
 #   -*- encoding=UTF-8 -*-
 import random
 from datetime import  datetime
-from nowstagram import db
+from nowstagram import db,login_manager
 
 # 关于一对多关系的解释举例：在User类中存在images属性与Images类关联起来，但是在User类创建时Images类
 # 并不存在，也就是创建之间存在先后关系，在先创建的类User中使用images占位符来代替暂未创建的Images中的属性
@@ -20,11 +20,11 @@ class User(db.Model):
     password = db.Column(db.String(32))
     salt = db.Column(db.String(32))
     head_url = db.Column(db.String(256))
-    comment = db.relationship('Comment',backref='user',lazy='dynamic')
+    comments = db.relationship('Comment',backref='user',lazy='dynamic')
     # images = db.relationship('Images')
     images =  db.relationship('Images', backref='user', lazy='dynamic')
 
-    def __init__(self, username, password, salt=''):
+    def __init__(self, username, password,salt=''):
         self.username = username
         self.password = password
         self.salt = salt
@@ -32,6 +32,22 @@ class User(db.Model):
 
     def __repr__(self):
         return ('<User %d %s>' % (self.id, self.username)).encode('gbk')
+
+    def is_authenticated(self):
+        return  True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 
 class Images(db.Model):
@@ -43,6 +59,7 @@ class Images(db.Model):
     # comment = db.Column(db.String(1024))
     created_date = db.Column(db.DateTime)
     comments = db.relationship('Comment')
+    # comment = db.relationship('Comment', backref='images', lazy='dynamic')
 
     def __init__(self, url, user_id):
         self.url = url
