@@ -23,11 +23,14 @@ class User(db.Model):
     comments = db.relationship('Comment',backref='user',lazy='dynamic')
     # images = db.relationship('Images')
     images =  db.relationship('Images', backref='user', lazy='dynamic')
+    # active_number = db.Column(db.String(32))
+    active = db.Column(db.Boolean)
 
-    def __init__(self, username, password,salt=''):
+    def __init__(self, username, password,salt='',active=False):
         self.username = username
         self.password = password
         self.salt = salt
+        self.active = active
         self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
 
     def __repr__(self):
@@ -37,7 +40,9 @@ class User(db.Model):
         return  True
 
     def is_active(self):
-        return True
+        if self.active:
+            return  True
+        return False
 
     def is_anonymous(self):
         return False

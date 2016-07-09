@@ -1,9 +1,10 @@
 #   -*- encoding=UTF-8 -*-
-from nowstagram import app, db
+from nowstagram import app, db,mail
 from nowstagram.models import  User, Images ,Comment
 from flask import  render_template,redirect,flash,get_flashed_messages,request
 from flask_login import  login_user,logout_user,current_user,login_required
 import  hashlib,random,json
+from flask_mail import  Message
 
 @app.route('/')
 @app.route('/index/')
@@ -70,17 +71,37 @@ def reg():
     m = hashlib.md5()
     m.update(password+salt)
     password = m.hexdigest()
+    # temp_number = random.sample('01234567899876543210',4)
+    # active_number = ''
+    # for number in temp_number:
+    #     active_number = active_number + number
 
     user = User(username, password, salt)
     db.session.add(user)
     db.session.commit()
 
     login_user(user)
+    sender = ['gao_feng_li0@sina.com']
+    recipients = [user]
+    msg = 'http://127.0.0.1:5000/active/'+str(user.id)+'/'
+    send_email('Nowstagram注册验证',sender,recipients,msg)
     next = request.values.get('next').strip()
     if next != None and next.startswith('/'):
         return redirect(next)
     return redirect('/')
 
+@app.route('/active/<int:user_id>/')
+def active_user(user_id):
+    user = User.query.get(user_id)
+    if user == None:
+        return  'Fial to ative user!'
+    if user.active == True:
+        return  'User is actived before!'
+    user.active = True
+    db.session.commit()
+    login_user(user)
+    next = '/profile/'+str(user.id)+'/'
+    return redirect(next)
 
 @app.route('/login/', methods={'get', 'post'})
 def login():
@@ -101,14 +122,36 @@ def login():
     if m.hexdigest() != user.password:
         return redirect_with_msg('/reloginpage/', u'密码错误', 'relogin')
 
-    login_user(user)
-
-    next = request.values.get('next').strip()
-    if next != None and next.startswith('/'):
-        return  redirect(next)
-    return redirect('/')
+    if user.is_active():
+        login_user(user)
+        next = request.values.get('next').strip()
+        if next != None and next.startswith('/'):
+            return  redirect(next)
+        return redirect('/')
+    return 'Please active by your email!'
 
 @app.route('/logout/')
 def logout():
     logout_user()
+    return  redirect('/')
+
+def send_email(subject, sender, recipients, text_body, html_body=''):
+    # if sender == None:
+    #     sender = MAIL_DEFAULT_SENDER
+    msg = Message(subject, sender, recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
+
+@app.route('/mail/')
+def send_mail():
+    authentication_number = random.sample('0123456789',4)
+    sender = ['gao_feng_li0@sina.com']
+    recipients = ['li-gao-feng@qq.com','gao_feng_li0@sina.com']
+    text_body = 'the authenticated number is '+str(authentication_number)+'\n'+'please enter http://127.0.0.1:5000/ to finish authention'
+    send_email(subject='Nowstagram注册验证',
+               sender=sender,
+              recipients=recipients,
+               text_body=text_body
+               )
     return  redirect('/')
