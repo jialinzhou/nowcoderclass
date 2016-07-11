@@ -5,7 +5,7 @@ from flask import  render_template,redirect,flash,get_flashed_messages,request
 from flask_login import  login_user,logout_user,current_user,login_required
 import  hashlib,random,json,base64
 from flask_mail import  Message
-from datetime import  datetime,time,date
+from datetime import  datetime,date
 
 @app.route('/')
 @app.route('/index/')
@@ -56,11 +56,12 @@ def index_more(page,per_page):
     images = []
     # comment = []
     for image in paginate.items:
-        comment = []
-        for cmt in image.comments:
-            comment.append(str(cmt.content))
-        # print comment
-        imgvo = {'image_id':image.id, 'image_url':image.url,'comment_count':len(image.comments),'created_date':image.created_date,'user_id':image.user.id,'user_head_url':image.user.head_url,'username':image.user.username,'comments':comment}
+        # comment = []
+        # for cmt in image.comments:
+        #     commentvo = {'content':cmt.content,'comment_username':cmt.user.username}
+        #     comment.append(commentvo)
+        # 评论可以组成数组 当做json的一个对象传过去，可找不到解析的方法，故而仅传一个评论吧！
+        imgvo = {'image_id':image.id, 'image_url':image.url,'comment_count':len(image.comments),'created_date':image.created_date,'user_id':image.user.id,'user_head_url':image.user.head_url,'username':image.user.username,'comment':image.comments[0].content,'comment_username':image.comments[0].user.username}
         images.append(imgvo)
 
     map['images']=images
@@ -73,31 +74,47 @@ def Image(image_id):
         return  redirect('/')
     return render_template('pageDetail.html',image=image)
 
-@app.route('/reloginpage/')
+@app.route('/loginpage/')
 def reloginpage(msg=''):
-    for m in get_flashed_messages(with_categories=False,category_filter=['relogin']):
+    for m in get_flashed_messages(with_categories=False,category_filter=['login']):
         msg = msg + m
     return render_template('login.html',msg=msg, next=request.values.get('next'))
 
+@app.route('/regpage/')
+def register(msg=''):
+    for m in get_flashed_messages(with_categories=False, category_filter=['reg']):
+        msg = msg + m
+    return render_template('register.html', msg=msg, next=request.values.get('next'))
 
 def redirect_with_msg(target,msg,category):
     flash(msg,category=category)
     return redirect(target)
 
-@app.route('/reg/',methods={'get','post'})
+@app.route('/register/',methods={'get','post'})
 def reg():
+    # print request.values.get('email')
     username = request.values.get('username').strip()
     password = request.values.get('password').strip()
+    password_again = request.values.get('password_again').strip()
+    email = request.values.get('email')
+    # print  email
 
-    if username=='' or  password=='':
-        return redirect_with_msg('/reloginpage/',u'用户名或密码不能为空','relogin')
+    if username=='' or  password=='' or email=='' or password_again=='':
+        return redirect_with_msg('/regpage/',u'用户名或密码或邮箱不能为空','reg')
 
-    if '@' not in username or '.' not in username:
-        return  redirect_with_msg('/reloginpage/',u'请使用正确邮箱地址注册','relogin')
+    if '@' not in email or '.' not in email:
+        return  redirect_with_msg('/regpage/',u'请使用正确邮箱地址注册','reg')
+
+    if password != password_again:
+        return  redirect_with_msg('/regpage/',u'两次输入密码不一致','reg')
 
     user = User.query.filter_by(username=username).first()
     if user != None:
-        return  redirect_with_msg('/reloginpage/',u'用户名已存在','relogin')
+        return  redirect_with_msg('/regpage/',u'用户名已存在','reg')
+
+    eml = User.query.filter_by(email=email).first()
+    if eml != None:
+        return  redirect_with_msg('/regpage/',u'该邮箱已注册请登录','reg')
 
     salt = '.'.join(random.sample('0123456789qbcdefghijklmnopqrstuvwxyz',10))
     m = hashlib.md5()
@@ -107,21 +124,58 @@ def reg():
     # active_number = ''
     # for number in temp_number:
     #     active_number = active_number + number
-
-    user = User(username, password, salt)
+    user = User(username=username, password=password, salt=salt, email=email)
     db.session.add(user)
     db.session.commit()
 
     login_user(user)
     sender = 'gao_feng_li0@sina.com'
-    recipients = [user.username]
+    recipients = [user.email]
     # 用base64对激活链接后面对用户进行识别的部分进行加密
     # user_id 太短了，所以还是用user.username进行加密更好一些
-    msg = 'http://127.0.0.1:5000/active/'+base64.urlsafe_b64encode(str(user.username)).rstrip('=')+'/'
-    send_email(subject='Nowstagram注册验证',sender=sender,recipients=recipients,text_body=msg)
+    text = 'Please enter the url below to active your account!\n'
+    active_url = 'http://127.0.0.1:5000/active/' + base64.urlsafe_b64encode(str(user.email)).rstrip('=') + '/'
+    msg = text + active_url
+    send_email(subject='Nowstagram注册验证', sender=sender, recipients=recipients, text_body=msg)
+
     next = request.values.get('next').strip()
     if next != None and next.startswith('/'):
         return redirect(next)
+    return redirect('/')
+
+@app.route('/login/', methods={'get', 'post'})
+def login():
+    username = request.values.get('username').strip()
+    password = request.values.get('password').strip()
+
+    if username == '' or password == '':
+        return redirect_with_msg('/loginpage/', u'用户名或密码不能为空', 'login')
+
+    if '@' in username and '.' in username:
+        email = username
+        user = User.query.filter_by(email=email).first()
+        if user == None:
+            return redirect_with_msg('/loginpage/', u'邮箱未注册', 'login')
+        m = hashlib.md5()
+        m.update(password + user.salt)
+        if m.hexdigest() != user.password:
+            return redirect_with_msg('/loginpage/', u'密码错误', 'login')
+        login_user(user)
+        next = request.values.get('next').strip()
+        if next != None and next.startswith('/'):
+            return redirect(next)
+        return redirect('/')
+    user = User.query.filter_by(username=username).first()
+    if user == None:
+        return  redirect_with_msg('/loginpage/',u'用户名不存在','login')
+    m = hashlib.md5()
+    m.update(password+user.salt)
+    if m.hexdigest() != user.password:
+        return redirect_with_msg('/loginpage/', u'密码错误', 'login')
+    login_user(user)
+    next = request.values.get('next').strip()
+    if next != None and next.startswith('/'):
+        return  redirect(next)
     return redirect('/')
 
 # 如此简单的激活方法肯定有问题
@@ -135,50 +189,22 @@ def reg():
 #     import base64
 #     return base64.urlsafe_b64decode(str(inp + '=' * (4 - len(inp) % 4)))
 #
-#
 # def base64_url_encode(inp):
 #     import base64
 #     return base64.urlsafe_b64encode(str(inp)).rstrip('=')
 @app.route('/active/<string:username_base64>/')
 def active_user(username_base64):
-    username = base64.urlsafe_b64decode(str(username_base64 + '=' * (4 - len(username_base64) % 4)))
-    user = User.query.filter_by(username=username).first()
+    email = base64.urlsafe_b64decode(str(username_base64 + '=' * (4 - len(username_base64) % 4)))
+    user = User.query.filter_by(email=email).first()
     if user == None:
-        return  'Fial to ative user!'
+        return  '用户不存在！'
     if user.active == True:
-        return  'User is actived before!'
+        return  '用户已处于激活态，请勿重复激活'
     user.active = True
     db.session.commit()
     login_user(user)
     next = '/profile/'+str(user.id)+'/'
     return redirect(next)
-
-@app.route('/login/', methods={'get', 'post'})
-def login():
-    username = request.values.get('username').strip()
-    password = request.values.get('password').strip()
-
-    if username == '' or password == '':
-        return redirect_with_msg('/reloginpage/', u'用户名或密码不能为空', 'relogin')
-
-    user = User.query.filter_by(username=username).first()
-
-    if user == None:
-        return  redirect_with_msg('/reloginpage/',u'用户名不存在','relogin')
-
-    m = hashlib.md5()
-    m.update(password+user.salt)
-
-    if m.hexdigest() != user.password:
-        return redirect_with_msg('/reloginpage/', u'密码错误', 'relogin')
-
-    if user.is_active():
-        login_user(user)
-        next = request.values.get('next').strip()
-        if next != None and next.startswith('/'):
-            return  redirect(next)
-        return redirect('/')
-    return 'Please active by your email!'
 
 @app.route('/logout/')
 def logout():

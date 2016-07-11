@@ -15,7 +15,7 @@ def get_url():
 def init_database():
     db.drop_all()
     db.create_all()
-    for i in range(0, 100):
+    for i in range(0, 20):
         db.session.add(User('practice'+str(i+1), 'pass'+str(i+1)))
     #   密码是需要加密的
         for j in range(0, 10):
@@ -58,30 +58,30 @@ def init_database():
     # db.session.commit()
 
 
-    print 1, User.query.all( )
-    print 2, User.query.get(10)
-    print 3, User.query.filter_by(id=5).first()
-    print 4, User.query.order_by(User.id.desc()).offset(1).limit(4).all()
-    print 5, User.query.paginate(page=2, per_page=10).items
-    # 分页显示
-    # print 5, User.query.filter(or_(User.id== 3,User.id == 88)).all()
-    #or_ and_ 这些组合操作符否不可用，不知从哪里导入
-    u = User.query.get(7)
-    print 6,u.username
-    #为何这边却可以这样用呢？还是因为名字冲突了，不是名称的问题啊
-    #一对多查询
-    # print  7, u.comment
-    print  72,u.images.all()
-    # 在没有设置backref的情况下，可以正确的得到关联的images结果，但backref后就没有了
-    # 有结果，但是直接打印出出来格式不对，用.all()就可以全部打印出来
-    print 88,Images.query.get(8).user.id
-    print 888,Images.query.get(10),'comment',Images.query.get(10).comments
-    print 89, Images.query.order_by(db.desc('id')).limit(10).first()
-    images = Images.query.order_by(db.desc('id')).limit(10)
-    for image in images:
-        print 999,image,image.comments
-        for comment in image.comments:
-            print 'comment',comment
+    # print 1, User.query.all( )
+    # print 2, User.query.get(10)
+    # print 3, User.query.filter_by(id=5).first()
+    # print 4, User.query.order_by(User.id.desc()).offset(1).limit(4).all()
+    # print 5, User.query.paginate(page=2, per_page=10).items
+    # # 分页显示
+    # # print 5, User.query.filter(or_(User.id== 3,User.id == 88)).all()
+    # #or_ and_ 这些组合操作符否不可用，不知从哪里导入
+    # u = User.query.get(7)
+    # print 6,u.username
+    # #为何这边却可以这样用呢？还是因为名字冲突了，不是名称的问题啊
+    # #一对多查询
+    # # print  7, u.comment
+    # print  72,u.images.all()
+    # # 在没有设置backref的情况下，可以正确的得到关联的images结果，但backref后就没有了
+    # # 有结果，但是直接打印出出来格式不对，用.all()就可以全部打印出来
+    # print 88,Images.query.get(8).user.id
+    # print 888,Images.query.get(10),'comment',Images.query.get(10).comments
+    # print 89, Images.query.order_by(db.desc('id')).limit(10).first()
+    # images = Images.query.order_by(db.desc('id')).limit(10)
+    # for image in images:
+    #     print 999,image,image.comments
+    #     for comment in image.comments:
+    #         print 'comment',comment
     # for image in images:
     #     # print 8, image.user.id, image.user.head_url, image.user.username
     #     print  8,image.id,image.comments.all()

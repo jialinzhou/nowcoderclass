@@ -15,10 +15,10 @@
                 <div class="header-cont">
                     <a class="logo" href="/">logo</a>
                     <div class="web-menu">
-                        {% if current_user.is_authenticated %}
+                    {% if current_user.is_authenticated %}
                      <a class="profile-ico" href="/profile/{{current_user.id}}/">{{current_user.username}}-个人主页</a>
                     {% else %}
-                        <a class="profile-ico" href="/reloginpage/">登陆/注册</a>
+                        <a class="profile-ico" href="/loginpage/">登陆</a>
                     {% endif %}
                     </div>
                 </div>

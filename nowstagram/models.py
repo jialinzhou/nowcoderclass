@@ -19,6 +19,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(32))
     salt = db.Column(db.String(32))
+    email = db.Column(db.String(256))
     head_url = db.Column(db.String(256))
     comments = db.relationship('Comment',backref='user',lazy='dynamic')
     # images = db.relationship('Images')
@@ -26,10 +27,11 @@ class User(db.Model):
     # active_number = db.Column(db.String(32))
     active = db.Column(db.Boolean)
 
-    def __init__(self, username, password,salt='',active=False):
+    def __init__(self, username, password, salt='', email='12345678@qq.com', active=False):
         self.username = username
         self.password = password
         self.salt = salt
+        self.email = email
         self.active = active
         self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
 

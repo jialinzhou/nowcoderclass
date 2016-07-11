@@ -64,7 +64,7 @@ $(function () {
      '<article class="mod">',
         '<header class="mod-hd">',
             '<time class="time">#{created_date}</time>',
-            //            #{created_date}与括号之间不能留空格，否则显示不了,但完全按字符串显示的，有问题
+            //            #{created_date}与括号之间不能留空格，否则显示不了
             '<a href="/profile/#{user_id}" class="avatar">',
                 '<img src="#{user_head_url}">',
             '</a>',
@@ -87,25 +87,27 @@ $(function () {
                         '<span> 条评论</span></a>',
                 '</li>',
                 //        评论数据可以用json传过来，但是不知道如何解析，嵌套解析？
-                // '{% for comment in image.comments: %}',
-                // '{% if loop.index > 3 %}{% break %}{% endif %}',
-                //         call:function () {
-                //
-                //     }
-                    //     var cHtml = '';
-                    //     $.each(oImage.comments )
-                    // {
-                    //         cHtml += that.tpl([
-                    //        '<li>',
-                    //             '<a class="_4zhc5 _iqaka" title="zjuyxy" href="/profile/{{comment.user_id}}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">{{comment.user.username}}</a>',
-                    //             '<span>',
-                    //                 '<span>#{comment}</span>',
-                    //             '</span>',
-                    //         '</li>'
-                    //     ].join(''), oComment);
-                    //     }) ;
-                    // cHtml && that.listE2.append(cHtml);
-                    
+                //        很无奈，折腾半天不知道如何解析json对象中嵌套的comments数组，只能暂时传一个评论过来装样子了
+                '<div class="js-comment-list">',
+                        '<li>',
+                            '<a class="_4zhc5 _iqaka" title="zjuyxy" href="/profile/#{user_id}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">#{comment_username}</a>',
+                            '<span>',
+                                '<span>#{comment}</span>',
+                            '</span>',
+                        '</li>',
+                '</div>',       
+                // <div class="js-comment-list">
+                //             {% for comment in image.comments: %}
+                //             {% if loop.index > 2 %}{% break %}{% endif %}
+                //             <li>
+                //                 <!-- <a class=" icon-remove" title="删除评论"></a> -->
+                //                 <a class="_4zhc5 _iqaka" title="zjuyxy" href="/profile/{{comment.user_id}}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">{{comment.user.username}}</a>
+                //                 <span>
+                //                     <span>{{comment.content}}</span>
+                //                 </span>
+                //             </li>
+                //             {%endfor%}
+                // </div>
             '</ul>',
             '<section class="discuss-edit">',
                 '<form>',
