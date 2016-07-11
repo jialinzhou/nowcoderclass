@@ -1,6 +1,6 @@
 #   -*- encoding=UTF-8 -*-
 import random
-from datetime import  datetime
+from datetime import  datetime,time
 from nowstagram import db,login_manager
 
 # 关于一对多关系的解释举例：在User类中存在images属性与Images类关联起来，但是在User类创建时Images类
@@ -70,6 +70,8 @@ class Images(db.Model):
         self.url = url
         self.user_id = user_id
         self.created_date = datetime.now()
+        # time.strftime('%Y-%m-%d %H:%M:%S',datetime.now())
+            # .strftime('%Y-%m-%d %H:%M:%S')
 
     def __repr__(self):
         return '<Images %s %d>' % (self.url, self.user_id)

@@ -1,0 +1,18 @@
+web开发，邮件激活思路
+用web.py,dajngo,tornado,flask等开发web，经常要用到邮件激活功能。
+思路是这样的，可能还有其它好的方法，只提供参考！
+1、数据库中用户表设计一个字段，原始值为0，表示没有激活。
+2、用户注册代码中，构造一个链接，发到用户邮箱，链接要加密。
+3、用这个链接来update，用户表的一个那个表示激活的字段。更新为1，表示激活。
+4、要设置过期时间。
+
+web.py 中写一个激活的类，类中定义一个GET方法。
+当用户点击这个激活链接时，就调用这个类中的GET方法。
+
+tornado和web.py思路一样。
+
+黄哥python远程视频培训班
+https://github.com/pythonpeixun/article/blob/master/index.md
+
+黄哥python培训试看视频播放地址
+https://github.com/pythonpeixun/article/blob/master/python_shiping.md
