@@ -38,17 +38,21 @@ class User(db.Model):
     def __repr__(self):
         return ('<User %d %s>' % (self.id, self.username)).encode('gbk')
 
+    @property
     def is_authenticated(self):
         return  True
 
+    @property
     def is_active(self):
-        if self.active:
+        if self.active == True:
             return  True
         return False
 
+    @property
     def is_anonymous(self):
         return False
 
+    @property
     def get_id(self):
         return self.id
 

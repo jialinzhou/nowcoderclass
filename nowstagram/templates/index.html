@@ -37,7 +37,7 @@
                                     <span>全部 </span><span class="" >{{image.comments|length}}</span>
                                     <span> 条评论</span></a>
                             </li>
-                            <div class="js-comment-list">
+                            <div class="js-comment-list-{{image.id}}">
                             {% for comment in image.comments: %}
                             {% if loop.index > 2 %}{% break %}{% endif %}
                             <li>
@@ -51,13 +51,13 @@
                             </div>
                         </ul>
                         <section class="discuss-edit">
-                            <form>
-                                <input placeholder="添加评论..." type="text">
-                            </form>
-                            <button class="more-info">提交</button>
+                           <a class="icon-heart-empty"></a>
+                            <input placeholder="添加评论..." id="jsCmt" type="text">
+                            <button class="more-info" id="{{image.id}}" content="我真的不知道如何搞啊！" onclick=addcomment(this)>更多选项</button>
                         </section>
                     </div>
                 </article>
+
             {% endfor %}
             </div>
             <!--更多按钮为什么偏移靠下，只显示一半出来，在js并未成的时候却政策，css也完全一样根本没改动啊-->
@@ -70,6 +70,14 @@
         </div>
     </article>
 </div>
+<script>
+       function addcomment(e){
+         var id=e.getAttribute("id");
+         var cls = e.getAttribute('class');
+         var content = e.getAttribute('content')
+         return alert(content);
+       }
+</script>
 {% endblock%}
 {% block js %}
 <script type="text/javascript">

@@ -1,11 +1,12 @@
 #   -*- encoding=UTF-8 -*-
 from nowstagram import app, db,mail
 from nowstagram.models import  User, Images ,Comment
-from flask import  render_template,redirect,flash,get_flashed_messages,request
+from flask import  render_template,redirect,flash,get_flashed_messages,request,send_from_directory
 from flask_login import  login_user,logout_user,current_user,login_required
-import  hashlib,random,json,base64
+import  hashlib,random,json,base64,os,uuid
 from flask_mail import  Message
 from datetime import  datetime,date
+from qiniusdk import qiniu_upload
 
 @app.route('/')
 @app.route('/index/')
@@ -54,14 +55,29 @@ def index_more(page,per_page):
     paginate = Images.query.order_by(db.desc('id')).paginate(page=page,per_page=per_page,error_out=False)
     map = {'has_next':paginate.has_next}
     images = []
-    # comment = []
     for image in paginate.items:
-        # comment = []
-        # for cmt in image.comments:
-        #     commentvo = {'content':cmt.content,'comment_username':cmt.user.username}
-        #     comment.append(commentvo)
+        comment_username=[]
+        comment_user_id=[]
+        comment_content=[]
+        for i in range(0,min(2,len(image.comments))):
+            comment = image.comments[i]
+            comment_username.append(comment.user.username)
+            comment_user_id.append(comment.user_id)
+            comment_content.append(comment.content)
+            # comments.append({'comment_username': comment.user.username,
+            #                  'comment_user_id': comment.user_id,
+            #                   'content': comment.content})
         # 评论可以组成数组 当做json的一个对象传过去，可找不到解析的方法，故而仅传一个评论吧！
-        imgvo = {'image_id':image.id, 'image_url':image.url,'comment_count':len(image.comments),'created_date':image.created_date,'user_id':image.user.id,'user_head_url':image.user.head_url,'username':image.user.username,'comment':image.comments[0].content,'comment_username':image.comments[0].user.username}
+        imgvo = {'image_id':image.id,
+                 'image_url':image.url,
+                 'image_comments_length':len(image.comments),
+                 'created_date':image.created_date,
+                 'image_user_id':image.user.id,
+                 'image_user_head_url':image.user.head_url,
+                 'image_user_username':image.user.username,
+                 'comment_user_username':comment_username,
+                 'comment_user_id':comment_user_id,
+                 'comment_content':comment_content}
         images.append(imgvo)
 
     map['images']=images
@@ -245,3 +261,48 @@ def send_mail():
 #     jiami = base64.urlsafe_b64encode(str(inp)).rstrip('=')
 #     jiemi = base64.urlsafe_b64decode(str(jiami + '=' * (4 - len(jiami) % 4)))
 #     return jiemi
+
+def save_to_local(file,filename):
+    save_dir = app.config['UPLOAD_DIR']
+    file.save(os.path.join(save_dir,filename))
+    return '/image/'+filename
+
+@app.route('/image/<image_name>')
+def  view_image(image_name):
+    return  send_from_directory(app.config['UPLOAD_DIR'],image_name)
+
+
+@app.route('/upload/',methods={'post'})
+def upload():
+    file = request.files['file']
+    ext_name = file.filename.rsplit('.',1)[1].strip().lower()
+    if ext_name in app.config['ALLOWED_EXT']:
+        file_name = str(uuid.uuid1()).replace('-','')+'.'+ext_name
+        # url = save_to_local(file,file_name)
+        url = qiniu_upload(file,file_name)
+        if url != None:
+            db.session.add(Images(url,current_user.id))
+            db.session.commit()
+    return  redirect('/profile/%d' %current_user.id)
+
+@app.route('/addcomment/',methods={'post'})
+def add_comment():
+    if current_user.is_authenticated:
+        # print current_user.is_authenticated
+        if current_user.is_active:
+            # print  current_user.is_active
+            image_id = request.values.get('image_id')
+            content = request.values.get('content')
+            comment = Comment(image_id=image_id,content=content,user_id=current_user.id)
+            db.session.add(comment)
+            db.session.commit()
+            return json.dumps({'code':0,
+                               'id':comment.id,
+                               'image_id':image_id,
+                               'content':content,
+                               'username':comment.user.username,
+                               'user_id':comment.user_id})
+        return json.dumps({'code':1,
+                                'msg':"请完成激活后评论！"})
+    return json.dumps({'code': 1,
+                       'msg': "请登录后进行评论！"})

@@ -15,7 +15,6 @@ $(function () {
         var that = this;
         // 常用元素
         that.listEl = $('div.js-image-list');
-        // that.listE2 = $('div.js-comment-list');
         // 初始化数据
         that.uid = window.uid;
         that.page = 1;
@@ -56,67 +55,62 @@ $(function () {
                 // 更新当前页面
                 that.page++;
                 // 渲染数据
-                //json数据可以收到，但是渲染这部分是出不来的，还没搞懂是为什么？
-                //listEl 没改，所以找不到，自然代码没添加进去
                 var sHtml = '';
                 $.each(oResult.images, function (nIndex, oImage) {
-                    sHtml += that.tpl([
-     '<article class="mod">',
-        '<header class="mod-hd">',
-            '<time class="time">#{created_date}</time>',
-            //            #{created_date}与括号之间不能留空格，否则显示不了
-            '<a href="/profile/#{user_id}" class="avatar">',
-                '<img src="#{user_head_url}">',
-            '</a>',
-            '<div class="profile-info">',
-                '<a title="#{username}" href="/profile/#{user_id}">#{username}</a>',
-            '</div>',
-        '</header>',
-        '<div class="mod-bd">',
-            '<div class="img-box">',
-                '<a href="/image/#{image_id}">',
-                    '<img src="#{image_url}">',
+                    sHtml_part1 = that.tpl([
+                         '<article class="mod">',
+            '<header class="mod-hd">',
+                '<time class="time">#{created_date}</time>',
+                '<a href="/profile/#{image_user_id}" class="avatar">',
+                 '   <img src="#{image_user_head_url}">',
                 '</a>',
-            '</div>',
-        '</div>',
-        '<div class="mod-ft">',
-            '<ul class="discuss-list">',
-                '<li class="more-discuss">',
-                    '<a href="/image/#{image_id}">',
-                        '<span>全部 </span><span class="">#{comment_count}</span>',
-                        '<span> 条评论</span></a>',
-                '</li>',
-                //        评论数据可以用json传过来，但是不知道如何解析，嵌套解析？
-                //        很无奈，折腾半天不知道如何解析json对象中嵌套的comments数组，只能暂时传一个评论过来装样子了
-                '<div class="js-comment-list">',
-                        '<li>',
-                            '<a class="_4zhc5 _iqaka" title="zjuyxy" href="/profile/#{user_id}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">#{comment_username}</a>',
-                            '<span>',
-                                '<span>#{comment}</span>',
-                            '</span>',
-                        '</li>',
-                '</div>',       
-                // <div class="js-comment-list">
-                //             {% for comment in image.comments: %}
-                //             {% if loop.index > 2 %}{% break %}{% endif %}
-                //             <li>
-                //                 <!-- <a class=" icon-remove" title="删除评论"></a> -->
-                //                 <a class="_4zhc5 _iqaka" title="zjuyxy" href="/profile/{{comment.user_id}}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">{{comment.user.username}}</a>
-                //                 <span>
-                //                     <span>{{comment.content}}</span>
-                //                 </span>
-                //             </li>
-                //             {%endfor%}
-                // </div>
-            '</ul>',
-            '<section class="discuss-edit">',
-                '<form>',
-                    '<input placeholder="添加评论..." type="text">',
-                '</form>',
-                '<button class="more-info">提交</button>',
-            '</section>',
-        '</div>',
-    '</article>'].join(''), oImage);
+                '<div class="profile-info">',
+                    '<a title="#{image_user_username}" href="/profile/#{image_user_id}">#{image_user_username}</a>',
+                '</div>',
+            '</header>',
+            '<div class="mod-bd">',
+                '<div class="img-box">',
+                    '<a href = "/image/#{image_id}">',
+                    '<img src="#{image_url}">',
+               ' </div>',
+           ' </div>',
+           ' <div class="mod-ft">',
+              '  <ul class="discuss-list">',
+                   ' <li class="more-discuss">',
+                       ' <a>',
+                           ' <span>全部 </span><span class="">#{image_comments_length}</span>',
+                            '<span> 条评论</span></a>',
+                    '</li>',
+                    '<div class="js-comment-list-#{image_id}">'].join(''), oImage);
+                    sHtml_part2 = ' ';
+
+
+                    for (var ni = 0; ni < oImage.image_comments_length; ni++){
+                        dict = {'comment_user_username':oImage.comment_user_username[ni], 'comment_user_id':oImage.comment_user_id[ni],
+                            'comment_content':oImage.comment_content[ni] };
+                        sHtml_part2 += that.tpl([
+                        '    <li>',
+                            '    <a class="_4zhc5 _iqaka" title="#{comment_user_username}" href="/profile/#{comment_user_id}" data-reactid=".0.1.0.0.0.2.1.2:$comment-17856951190001917.1">#{comment_user_username}</a>',
+                            '    <span>',
+                            '        <span>#{comment_content}</span>',
+                           '     </span>',
+                         '   </li>',
+                             ].join(''), dict);
+                    }
+
+                    sHtml_part3 =    that.tpl([
+                        '</div>',
+              '  </ul>',
+               '<section class="discuss-edit">',
+                  '<a class="icon-heart-empty"></a>',
+                   ' <input placeholder="添加评论..." id="jsCmt-#{image_id}" type="text">',
+                   ' <button class="more-info" id="jsSubmit-#{image_id}" content="我真的不知道如何搞啊！" onclick=addcomment(this)>更多选项</button>',
+                '</section>',
+           ' </div>',
+
+       ' </article>  '
+                    ].join(''), oImage);
+                    sHtml += sHtml_part1 + sHtml_part2 + sHtml_part3;
                 });
                 sHtml && that.listEl.append(sHtml);
             },
@@ -129,7 +123,7 @@ $(function () {
 
     function fRequestData(oConf) {
         var that = this;
-        var sUrl = '/index/'  + oConf.page + '/' + oConf.pageSize + '/';
+        var sUrl = '/index/' + oConf.page + '/' + oConf.pageSize + '/';
         $.ajax({url: sUrl, dataType: 'json'}).done(oConf.call).fail(oConf.error).always(oConf.always);
     }
 
