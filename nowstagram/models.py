@@ -26,13 +26,15 @@ class User(db.Model):
     images =  db.relationship('Images', backref='user', lazy='dynamic')
     # active_number = db.Column(db.String(32))
     active = db.Column(db.Boolean)
+    user_type = db.Column(db.String(64))
 
-    def __init__(self, username, password, salt='', email='12345678@qq.com', active=False):
+    def __init__(self, username, password, salt='', email='12345678@qq.com', active=False, user_type="guest"):
         self.username = username
         self.password = password
         self.salt = salt
         self.email = email
         self.active = active
+        self.user_type = user_type
         self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
 
     def __repr__(self):
@@ -52,13 +54,9 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
-    @property
     def get_id(self):
         return self.id
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
 
 
 class Images(db.Model):
@@ -71,10 +69,14 @@ class Images(db.Model):
     created_date = db.Column(db.DateTime)
     comments = db.relationship('Comment')
     # comment = db.relationship('Comment', backref='images', lazy='dynamic')
+    pv = db.Column(db.Integer)
+    priority = db.Column(db.Integer)
 
-    def __init__(self, url, user_id):
+    def __init__(self, url, user_id, pv=0,priority=0):
         self.url = url
         self.user_id = user_id
+        self.pv = pv
+        self.priority = priority
         self.created_date = datetime.now()
         # time.strftime('%Y-%m-%d %H:%M:%S',datetime.now())
             # .strftime('%Y-%m-%d %H:%M:%S')
@@ -100,3 +102,8 @@ class Comment(db.Model):
 
     def __repr__(self):
         return  ('<Comment %s %d>' % (self.content, self.user_id)).encode('gbk')
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)

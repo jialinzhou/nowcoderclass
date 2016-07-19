@@ -33,7 +33,9 @@
                 {% for comment in image.comments %}
                 {% if loop.index > 10 %}{% break %}{% endif %}
                 <li>
-                    <!-- <a class=" icon-remove" title="删除评论"></a> -->
+                    {% if current_user.user_type == 'admin' %}
+                    <a class=" icon-remove" href="/deletecomment/{{image.id}}/{{comment.id}}/" title="删除评论"></a>
+                    {% endif %}
                     <a class="_4zhc5 _iqaka" title="{{comment.user.username}}" href="/profile/{{comment.user.id}}" data-reactid="{{comment.id}}">{{comment.user.username}}</a>
                     <span>
                         <span>{{comment.content}}</span>
@@ -41,6 +43,19 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% if current_user.user_type == 'admin' %}
+            <section class="admin">
+               <li>
+                    <a class="icon-remove" id="delete-image" href="/deleteimage/{{image.id}}/">删除图片</a>
+                </li>
+                <li>
+                    <a  class="more-content" id="priority-image" href="/priority/{{image.id}}/" >置顶图片</a>
+                </li>
+                <li>
+                    <a class="more-content" id="quitpriority-image" href="/quitpriority/{{image.id}}/" >取消置顶</a>
+                </li>
+            </section>
+            {% endif %}
             <section class="discuss-edit">
                <a class="icon-heart-empty"></a>
                 <input placeholder="添加评论..." id="jsCmt" type="text">

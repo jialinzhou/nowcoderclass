@@ -12,7 +12,7 @@ from qiniusdk import qiniu_upload
 @app.route('/index/')
 def index():
     # images = Images.query.order_by(db.desc('id')).limit(10).all()
-    paginate = Images.query.order_by(db.desc('id')).paginate(page=1,per_page=10,error_out=False)
+    paginate = Images.query.order_by(db.desc('priority')).order_by(db.desc('pv')).order_by(db.desc('id')).paginate(page=1,per_page=10,error_out=False)
     # comments = Comment.query.filter_by('image_id=i')
     # for image in images:
     #     print image.comments
@@ -52,7 +52,7 @@ class CJsonEncoder(json.JSONEncoder):
 
 @app.route('/index/<int:page>/<int:per_page>/')
 def index_more(page,per_page):
-    paginate = Images.query.order_by(db.desc('id')).paginate(page=page,per_page=per_page,error_out=False)
+    paginate = Images.query.order_by(db.desc('priority')).order_by(db.desc('pv')).order_by(db.desc('id')).paginate(page=page,per_page=per_page,error_out=False)
     map = {'has_next':paginate.has_next}
     images = []
     for image in paginate.items:
@@ -88,6 +88,8 @@ def Image(image_id):
     image = Images.query.get(image_id)
     if image == None:
         return  redirect('/')
+    image.pv = image.pv + 1
+    db.session.commit()
     return render_template('pageDetail.html',image=image)
 
 @app.route('/loginpage/')
@@ -136,10 +138,6 @@ def reg():
     m = hashlib.md5()
     m.update(password+salt)
     password = m.hexdigest()
-    # temp_number = random.sample('01234567899876543210',4)
-    # active_number = ''
-    # for number in temp_number:
-    #     active_number = active_number + number
     user = User(username=username, password=password, salt=salt, email=email)
     db.session.add(user)
     db.session.commit()
@@ -189,6 +187,7 @@ def login():
     if m.hexdigest() != user.password:
         return redirect_with_msg('/loginpage/', u'密码错误', 'login')
     login_user(user)
+    # login_user(user) 会莫名其妙失败，返回false，这部分代码没改过，以前一直正常的
     next = request.values.get('next').strip()
     if next != None and next.startswith('/'):
         return  redirect(next)
@@ -306,3 +305,35 @@ def add_comment():
                                 'msg':"请完成激活后评论！"})
     return json.dumps({'code': 1,
                        'msg': "请登录后进行评论！"})
+
+@app.route('/deleteimage/<int:image_id>/')
+def delete_image(image_id):
+    image = Images.query.get(image_id)
+    if image != None:
+        db.session.delete(image)
+        db.session.commit()
+        return  redirect('/')
+
+@app.route('/deletecomment/<int:image_id>/<int:comment_id>/')
+def delete_comment(image_id,comment_id):
+    comment = Comment.query.get(comment_id)
+    if comment != None:
+        db.session.delete(comment)
+        db.session.commit()
+        return  redirect('/image/'+str(image_id) + '/')
+
+@app.route('/priority/<int:image_id>/')
+def priority_image(image_id):
+    image = Images.query.get(image_id)
+    if image != None:
+        image.priority = image.priority + 1
+        db.session.commit()
+        return  redirect('/image/'+str(image_id) + '/')
+
+@app.route('/quitpriority/<int:image_id>/')
+def quitpriority_image(image_id):
+    image = Images.query.get(image_id)
+    if image != None:
+        image.priority = 0
+        db.session.commit()
+        return  redirect('/image/'+str(image_id) + '/')

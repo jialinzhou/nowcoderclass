@@ -38,3 +38,31 @@
     text-indent: 110%;
     white-space: nowrap;
 }
+.logout-ico {
+    background-image: url(../../images/img/icons2.png);
+    background-repeat: no-repeat;
+    background-size: 299px 291px;
+    background-position: -32px -227px;
+    height: 24px;
+    width: 24px;
+    display: block;
+    overflow: hidden;
+    text-indent: 110%;
+    white-space: nowrap;
+}
+
+.home {
+    background-image: url(../../images/img/icons2.png);
+    background-repeat: no-repeat;
+    background-size: 299px 291px;
+    /*background-position: -181px -59px;*/
+    /*height: 32px;*/
+    /*width: 32px;*/
+    background-position: -181px -59px;
+    height: 32px;
+    width: 32px;
+    display: block;
+    overflow: hidden;
+    text-indent: 110%;
+    white-space: nowrap;
+}

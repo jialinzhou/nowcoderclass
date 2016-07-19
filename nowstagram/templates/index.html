@@ -53,7 +53,7 @@
                         <section class="discuss-edit">
                            <a class="icon-heart-empty"></a>
                             <input placeholder="添加评论..." id="jsCmt" type="text">
-                            <button class="more-info" id="{{image.id}}" content="我真的不知道如何搞啊！" onclick=addcomment(this)>更多选项</button>
+                            <button class="more-info" id="{{image.id}}" content="请到图片详情页进行评论！" onclick=addcomment(this)>更多选项</button>
                         </section>
                     </div>
                 </article>
@@ -64,10 +64,10 @@
             <!--在整个外面在增加一个div和article将这部分套起来就可以了，其实就是尽量和profile.html保持一致-->
             {% if has_next %}
             <div class="more-content js-load-more">
-                    <a class="_oidfu" href="javascript:void(0);">更多</a>
+                    <a class="_oidfu" id="more-btn" href="javascript:void(0);">更多</a>
             </div>
             {% endif %}
-        </div>
+            </div>
     </article>
 </div>
 <script>
