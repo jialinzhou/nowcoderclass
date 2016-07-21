@@ -142,7 +142,7 @@ def reg():
     db.session.add(user)
     db.session.commit()
 
-    login_user(user)
+    login_user(user, force=True)
     sender = 'gao_feng_li0@sina.com'
     recipients = [user.email]
     # 用base64对激活链接后面对用户进行识别的部分进行加密
@@ -174,7 +174,7 @@ def login():
         m.update(password + user.salt)
         if m.hexdigest() != user.password:
             return redirect_with_msg('/loginpage/', u'密码错误', 'login')
-        login_user(user)
+        print login_user(user,force=True)
         next = request.values.get('next').strip()
         if next != None and next.startswith('/'):
             return redirect(next)
@@ -186,7 +186,7 @@ def login():
     m.update(password+user.salt)
     if m.hexdigest() != user.password:
         return redirect_with_msg('/loginpage/', u'密码错误', 'login')
-    login_user(user)
+    print  login_user(user,force=True)
     # login_user(user) 会莫名其妙失败，返回false，这部分代码没改过，以前一直正常的
     next = request.values.get('next').strip()
     if next != None and next.startswith('/'):
@@ -217,7 +217,7 @@ def active_user(username_base64):
         return  '用户已处于激活态，请勿重复激活'
     user.active = True
     db.session.commit()
-    login_user(user)
+    login_user(user, force=True)
     next = '/profile/'+str(user.id)+'/'
     return redirect(next)
 

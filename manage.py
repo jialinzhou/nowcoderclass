@@ -1,9 +1,10 @@
 #   -*- encoding=UTF-8 -*-
-import  random
+import  random,unittest ,test,re,urllib,requests
 from  nowstagram import  app, db
 from nowstagram.models import  User, Images, Comment
 from  flask_script import  Manager
-# import  operator
+from bs4 import  BeautifulSoup
+from unsplash import gethtml,gethead_url,getimages,getusername
 
 manager = Manager(app)
 
@@ -93,6 +94,47 @@ def init_database():
 #     print 9, c
 #     # print 10, c.user
 #     print  11,c.image_id
+
+@manager.command
+def run_test():
+    init_database()
+    # db.drop_all()
+    # db.create_all()
+    test = unittest.TestLoader().discover('./')
+    unittest.TextTestRunner().run(test)
+
+# 用unsplash网站首页的图和用户名
+# 图翁tuweng网站的图和评论来初始化数据库
+@manager.command
+def init_database_unsplash():
+    db.drop_all()
+    db.create_all()
+    html = gethtml('https://unsplash.com/')
+    namelist = getusername(html=html)
+    imagelist = getimages(html)
+    head_urllist = gethead_url(html)
+    tuweng = 'http://www.tuweng.com/feeling/index_'
+    url = ''
+    comments = []
+    # 每页16张图和评论
+    for i in range(4,15,1):
+        url = tuweng + str(i) +'.html'
+        html = requests.get(url).content
+        soup = BeautifulSoup(html,'html.parser')
+        for cmt in soup.find_all('div',{'class':'lm'}):
+            comment = cmt.a.img['alt']
+            image = cmt.a.img['src']
+            comments.append(comment)
+            imagelist.append(image)
+
+    for i in range(0,24,1):
+        db.session.add(User(username=namelist[i]+random.sample('abdcefghijklmnopqrtstvuwxyz',1)[0],password='123',head_url=head_urllist[i]))
+        for j in range(0,4,1):
+            db.session.add(Images(url=imagelist[i*4+j],user_id=i+1))
+            db.session.add(Comment(image_id=i*4+j+1,content=comments[i*4+j],user_id=i+1))
+            db.session.add(Comment(image_id=i*4+j+1,content=comments[i*4+j+5],user_id=i+1))
+    db.session.commit()
+
 
 if __name__ == '__main__':
     manager.run()

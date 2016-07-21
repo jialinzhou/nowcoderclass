@@ -11,9 +11,9 @@
             <div class="profile-content">
                 <div class="profile-info-main" data-reactid=".0.1.0.0:0.1.0">
                     <h1 class="name" title="taylorswift">{{user.username}}</h1>
+                    {% if user.id == current_user.id %}
                     {% if current_user.is_active %}
                     <span class="verified" title="已验证">已验证</span>
-                    {% if user.id == current_user.id %}
                     <span class="_jxp6f _e616g" style="display:inline-block;position:relative;">
                         <form method="post" action="/upload/" enctype="multipart/form-data">
                             <button class="btn-success">上传图片</button>
@@ -21,11 +21,11 @@
                         </form>
                     </span>
                     <button class="more-info">选项</button>
-                    {% endif %}
                     {% else %}
                     <span class="_jxp6f _e616g" style="display:inline-block;position:relative;">
                             <button class="btn-success">请激活后上传图片</button>
                     </span>
+                    {% endif %}
                     {% endif %}
                 </div>
                 <!--

@@ -11,6 +11,9 @@ from nowstagram import db,login_manager
 
 # 会自动将类名转换成小写然后作为表名，，，所以再外键时使用的是表名，而不是类名
 #但可以通过  __tablename__ = 'myuser' 来指定表名字
+def get_url():
+    return 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
+
 class User(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_general_ci'}
     # id = db.column(db.Integer, primary_key=True, autoincremet=True)
@@ -28,14 +31,14 @@ class User(db.Model):
     active = db.Column(db.Boolean)
     user_type = db.Column(db.String(64))
 
-    def __init__(self, username, password, salt='', email='12345678@qq.com', active=False, user_type="guest"):
+    def __init__(self, username, password, head_url=get_url(),salt='', email='12345678@qq.com', active=False, user_type="guest"):
         self.username = username
         self.password = password
         self.salt = salt
         self.email = email
         self.active = active
         self.user_type = user_type
-        self.head_url = 'http://images.nowcoder.com/head/' + str(random.randint(0, 1000)) + 't.png'
+        self.head_url = head_url
 
     def __repr__(self):
         return ('<User %d %s>' % (self.id, self.username)).encode('gbk')
